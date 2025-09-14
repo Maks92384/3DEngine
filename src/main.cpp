@@ -1,11 +1,12 @@
 #include <SFML/Graphics.hpp>
 
+#include "configuration.hpp"
 #include "events.hpp"
 
 int main()
 {
-    auto window = sf::RenderWindow(sf::VideoMode({1920u, 1080u}), "3DEngine");
-    window.setFramerateLimit(144);
+    auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine");
+    window.setFramerateLimit(conf::maxFps);
 
     while (window.isOpen())
     {
