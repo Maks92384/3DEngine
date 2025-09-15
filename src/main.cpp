@@ -2,17 +2,30 @@
 
 #include "configuration.hpp"
 #include "events.hpp"
+#include "3DEngine/Camera.hpp"
+#include "3DEngine/Engine3D.hpp"
 
 int main()
 {
     auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine");
     window.setFramerateLimit(conf::maxFps);
 
+    //Engine3D::generateBox("box1", {-5000, 0, -5000}, {100, -1, 100});
+    Engine3D::generateBox("box2", {0, 0, 0}, {3, -1, 3});
+
     while (window.isOpen())
     {
         manageEvents(window);
 
-        window.clear();
+
+        Camera::updateCamera(window);
+        Engine3D::render();
+
+
+        window.clear(sf::Color(100, 100, 100));
+
+        Engine3D::draw(window);
+
         window.display();
     }
 }

@@ -2,4 +2,4 @@
 
 #include "SFML/Graphics.hpp"
 
-void manageEvents(sf::RenderWindow &window);
+void manageEvents(sf::RenderWindow& window);

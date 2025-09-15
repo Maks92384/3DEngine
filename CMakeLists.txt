@@ -15,6 +15,16 @@ FetchContent_MakeAvailable(SFML)
 add_executable(main src/main.cpp
         src/events.cpp
         src/events.hpp
+        src/configuration.hpp
+        src/3DEngine/Engine3D.cpp
+        src/3DEngine/Engine3D.hpp
+        src/3DEngine/Camera.cpp
+        src/3DEngine/Camera.hpp
+        src/3DEngine/Object3D.cpp
+        src/3DEngine/Object3D.hpp
+        src/3DEngine/engineConfiguration.hpp
+        src/3DEngine/functions.cpp
+        src/3DEngine/functions.hpp
 )
 target_compile_features(main PRIVATE cxx_std_17)
 target_link_libraries(main PRIVATE SFML::Graphics)
