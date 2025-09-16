@@ -107,25 +107,15 @@ void Engine3D::render() {
 
             normals.push_back({vectorAB.y * vectorAC.z - vectorAB.z * vectorAC.y, vectorAB.z * vectorAC.x - vectorAB.x * vectorAC.z, vectorAB.x * vectorAC.y - vectorAB.y * vectorAC.x});
 
-            /* displaying normals (not working)
-            sf::Vector2f normalToDraw = transform(normals.back());
-
-            normalToDraw.x /= 4;
-            normalToDraw.y /= 4;
-
-            // display the Vector
-
-            */
-
             sf::Vector3f faceCenter = {(pointA.x + pointB.x + pointC.x) / 3, (pointA.y + pointB.y + pointC.y) / 3, (pointA.z + pointB.z + pointC.z) / 3};
 
             const sf::Vector2f point2D_A = pointsPositions[face[0]];
             const sf::Vector2f point2D_B = pointsPositions[face[1]];
             const sf::Vector2f point2D_C = pointsPositions[face[2]];
 
-            bool pointAOnScreen = point2D_A.x > 0 && point2D_A.y > 0 && point2D_A.x < windowSize && point2D_A.y < windowSize;
-            bool pointBOnScreen = point2D_B.x > 0 && point2D_B.y > 0 && point2D_B.x < windowSize && point2D_B.y < windowSize;
-            bool pointCOnScreen = point2D_C.x > 0 && point2D_C.y > 0 && point2D_C.x < windowSize && point2D_C.y < windowSize;
+            bool pointAOnScreen = point2D_A.x > 0 && point2D_A.y > 0 && point2D_A.x < conf::window_size_f.x && point2D_A.y < conf::window_size_f.y;
+            bool pointBOnScreen = point2D_B.x > 0 && point2D_B.y > 0 && point2D_B.x < conf::window_size_f.x && point2D_B.y < conf::window_size_f.y;
+            bool pointCOnScreen = point2D_C.x > 0 && point2D_C.y > 0 && point2D_C.x < conf::window_size_f.x && point2D_C.y < conf::window_size_f.y;
 
             bool faceOnScreen = pointAOnScreen || pointBOnScreen || pointCOnScreen;
 
@@ -207,18 +197,6 @@ void Engine3D::draw(sf::RenderWindow& window) {
     // Debug Mode
 
     if (engineConf::debugMode) {
-        // vision border
-
-        float margin = 0;//-((1 - Camera::getFov() / 180) * M_PI / 2) / (M_PI / 2 - ((1 - Camera::getFov() / 180) * M_PI / 2)) * windowSize / 2;
-
-        sf::RectangleShape visionBorder(sf::Vector2f(windowSize - 2 * margin - 4, windowSize - 2 * margin - 4));
-        visionBorder.setFillColor(sf::Color(0, 0, 0, 0));
-        visionBorder.setOutlineThickness(2);
-        visionBorder.setOutlineColor(sf::Color(255, 0, 0));
-        visionBorder.setPosition({margin + 2, margin + 2});
-
-        window.draw(visionBorder);
-
         // positive XYZ lines
 
         sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
@@ -282,7 +260,7 @@ sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
 
     transformedVector = rotate(transformedVector, {0, 0, rollAngle});
 
-    return {windowSize / 2 * (1 + transformedVector.x), windowSize / 2 * (1 - transformedVector.y)};
+    return {max(conf::window_size_f.x, conf::window_size_f.y) / 2 * (1 + transformedVector.x), max(conf::window_size_f.x, conf::window_size_f.y) / 2 * (1 - transformedVector.y)};
 }
 
 void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions /* (x=Length, y=Height, z=Depth) */ ) {

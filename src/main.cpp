@@ -7,8 +7,9 @@
 
 int main()
 {
-    auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine");
+    auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine", sf::State::Fullscreen);
     window.setFramerateLimit(conf::maxFps);
+    window.setMouseCursorVisible(false);
 
     Engine3D::generateBox("box1", {-5000, 0, -5000}, {100, -1, 100});
     //Engine3D::generateBox("box2", {0, 0, 0}, {3, -1, 3});

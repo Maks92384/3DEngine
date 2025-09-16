@@ -6,6 +6,7 @@ using namespace std;
 class Camera {
     static sf::Vector3f position;
     static vector<float> rotation; // Yaw, Pitch, Roll in degrees
+    static sf::Vector2f rotationBuffer;
     static sf::Vector3f direction; // Normalized vector in XYZ space (right-handed system)
 
     static float fov;
