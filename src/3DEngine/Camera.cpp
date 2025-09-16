@@ -51,24 +51,27 @@ void Camera::updateCamera(sf::RenderWindow& window) {
     rotation[0] = -(sf::Mouse::getPosition(window).x - Engine3D::getWindowSize() / 2) / Engine3D::getWindowSize() * 10 * 180 / M_PI;
     rotation[1] = -(sf::Mouse::getPosition(window).y - Engine3D::getWindowSize() / 2) / Engine3D::getWindowSize() * 10 * 180 / M_PI;
 
+
+    sf::Vector3f movementDirection = sf::Vector3f(direction.x, 0, direction.z).normalized();
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-        position.x += engineConf::movementSpeed * direction.normalized().x;
-        position.z += engineConf::movementSpeed * direction.normalized().z;
+        position.x += engineConf::movementSpeed * movementDirection.x;
+        position.z += engineConf::movementSpeed * movementDirection.z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        position.x += engineConf::movementSpeed * Engine3D::rotate(direction, {90, 0, 0}).normalized().x;
-        position.z += engineConf::movementSpeed * Engine3D::rotate(direction, {90, 0, 0}).normalized().z;
+        position.x += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {90, 0, 0}).x;
+        position.z += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {90, 0, 0}).z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-        position.x -= engineConf::movementSpeed * direction.normalized().x;
-        position.z -= engineConf::movementSpeed * direction.normalized().z;
+        position.x -= engineConf::movementSpeed * movementDirection.x;
+        position.z -= engineConf::movementSpeed * movementDirection.z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        position.x += engineConf::movementSpeed * Engine3D::rotate(direction, {-90, 0, 0}).normalized().x;
-        position.z += engineConf::movementSpeed * Engine3D::rotate(direction, {-90, 0, 0}).normalized().z;
+        position.x += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {-90, 0, 0}).x;
+        position.z += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {-90, 0, 0}).z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
