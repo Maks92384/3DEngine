@@ -5,14 +5,14 @@
 #include "3DEngine/Camera.hpp"
 #include "3DEngine/Engine3D.hpp"
 
-int main()
-{
+int main() {
     auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine", sf::State::Fullscreen);
     window.setFramerateLimit(conf::maxFps);
     window.setMouseCursorVisible(false);
+    sf::Mouse::setPosition(static_cast<sf::Vector2i>(conf::window_size) / 2);
 
-    Engine3D::generateBox("box1", {-5000, 0, -5000}, {100, -1, 100});
-    //Engine3D::generateBox("box2", {0, 0, 0}, {3, -1, 3});
+    Engine3D::generateBox("box1", {0, 0, 0}, {3, -1, 3});
+    Engine3D::generateBox("box2", {400, 0, 100}, {1, 3, -3});
 
     while (window.isOpen())
     {

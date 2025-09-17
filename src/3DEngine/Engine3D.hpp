@@ -14,8 +14,6 @@ class Engine3D {
     static vector<vector<sf::Vector2f>> facesToDraw;
     static vector<float> distances;
 
-    static float windowSize; // to remove
-
     static sf::Vector2f transform(sf::Vector3f point);
 public:
     static sf::Vector3f rotate(sf::Vector3f initialDirection, vector<float> rotation);

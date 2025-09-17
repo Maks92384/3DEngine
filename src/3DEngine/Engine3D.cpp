@@ -14,8 +14,6 @@ vector<sf::Vector2f> Engine3D::pointsToDraw;
 vector<vector<sf::Vector2f>> Engine3D::facesToDraw;
 vector<float> Engine3D::distances;
 
-float Engine3D::windowSize = min(conf::window_size_f.x, conf::window_size_f.y);
-
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) {
     objects.try_emplace(name, Object3D(std::move(points), std::move(faces), enabled));
@@ -197,27 +195,6 @@ void Engine3D::draw(sf::RenderWindow& window) {
     // Debug Mode
 
     if (engineConf::debugMode) {
-        // positive XYZ lines
-
-        sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
-
-        Axes[0].position = transform({0, 0, 0});
-        Axes[1].position = transform({50, 0, 0});
-        Axes[0].color = sf::Color(255, 0, 0);
-        Axes[1].color = sf::Color(255, 0, 0);
-
-        Axes[2].position = transform({0, 0, 0});
-        Axes[3].position = transform({0, 50, 0});
-        Axes[2].color = sf::Color(0, 255, 0);
-        Axes[3].color = sf::Color(0, 255, 0);
-
-        Axes[4].position = transform({0, 0, 0});
-        Axes[5].position = transform({0, 0, 50});
-        Axes[4].color = sf::Color(0, 0, 255);
-        Axes[5].color = sf::Color(0, 0, 255);
-
-        window.draw(Axes);
-
         // World center
 
         sf::CircleShape worldCenter(5);
@@ -228,39 +205,51 @@ void Engine3D::draw(sf::RenderWindow& window) {
         worldCenter.setOrigin({5, 5});
 
         window.draw(worldCenter);
+
+
+        // positive XYZ lines
+
+        sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
+
+        Axes[0].position = conf::window_size_f / 2.0f;
+        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({50, 0, 0}, Camera::getRotation()).x, unRotate({50, 0, 0}, Camera::getRotation()).y);
+        Axes[0].color = sf::Color(255, 0, 0);
+        Axes[1].color = sf::Color(255, 0, 0);
+
+        Axes[2].position = conf::window_size_f / 2.0f;
+        Axes[3].position = conf::window_size_f / 2.0f - sf::Vector2f(unRotate({0, 50, 0}, Camera::getRotation()).x, unRotate({0, 50, 0}, Camera::getRotation()).y);
+        Axes[2].color = sf::Color(0, 255, 0);
+        Axes[3].color = sf::Color(0, 255, 0);
+
+        Axes[4].position = conf::window_size_f / 2.0f;
+        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({0, 0, 50}, Camera::getRotation()).x, unRotate({0, 0, 50}, Camera::getRotation()).y);
+        Axes[4].color = sf::Color(0, 0, 255);
+        Axes[5].color = sf::Color(0, 0, 255);
+
+        window.draw(Axes);
     }
 }
 
 sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
-    sf::Vector3f xAxis = {1, 0, 0};
-    sf::Vector3f yAxis = {0, 1, 0};
-    sf::Vector3f zAxis = {0, 0, 1};
+    sf::Vector2f cameraSize = {0, 0};
+    float fovInRadians = Camera::getFov() * M_PI / 180;
 
-    sf::Vector3f vectorToTransform = point3D - Camera::getPosition();
+    point3D -= Camera::getPosition();
 
-    vectorToTransform = unRotate(vectorToTransform, Camera::getRotation());
+    point3D = unRotate(point3D, Camera::getRotation());
 
-    float copyOfTheZValue = vectorToTransform.z;
+    float pointDistance = -point3D.z;
 
+    sf::Vector2f scaledCameraSize = {tan(fovInRadians / 2) * pointDistance * 2, tan(fovInRadians / 2) * conf::window_size_f.y / conf::window_size_f.x * pointDistance * 2};
 
-    vectorToTransform.z = 0;
+    sf::Vector2f transformedPoint = {point3D.x * conf::window_size_f.x / scaledCameraSize.x, point3D.y * conf::window_size_f.y / scaledCameraSize.y};
 
-    float rollAngle = angleBetween(yAxis, vectorToTransform);
+    if (pointDistance < 0) {
+        transformedPoint.x *= 1000000;
+        transformedPoint.y *= 1000000;
+    }
 
-    if (vectorToTransform.x == 0 && vectorToTransform.y == 0)
-        rollAngle = 0;
-
-    if (angleBetween(-xAxis, vectorToTransform) > 90)
-        rollAngle *= -1;
-
-    vectorToTransform.z = copyOfTheZValue;
-
-
-    sf::Vector3f transformedVector = {0, angleBetween(-zAxis, vectorToTransform) / (90 * Camera::getFov() / 180), 0};
-
-    transformedVector = rotate(transformedVector, {0, 0, rollAngle});
-
-    return {max(conf::window_size_f.x, conf::window_size_f.y) / 2 * (1 + transformedVector.x), max(conf::window_size_f.x, conf::window_size_f.y) / 2 * (1 - transformedVector.y)};
+    return {conf::window_size_f.x / 2 + transformedPoint.x , conf::window_size_f.y / 2  - transformedPoint.y};
 }
 
 void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions /* (x=Length, y=Height, z=Depth) */ ) {
@@ -346,8 +335,4 @@ void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dime
     makeNewObject(name, points, faces, true);
 
     objects[name].setPosition(position);
-}
-
-float Engine3D::getWindowSize() {
-    return windowSize;
 }
