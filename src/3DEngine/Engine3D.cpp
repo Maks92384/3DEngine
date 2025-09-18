@@ -134,23 +134,7 @@ void Engine3D::render() {
 }
 
 void Engine3D::draw(sf::RenderWindow& window) {
-    /*
-    if (distances.size() >= 2) {
-        for (unsigned int i = 0; i < distances.size() - 1; i++) {
-            for (unsigned int j = i + 1; j < distances.size(); j++) {
-                if (distances[i] < distances[j]) {
-                    float temp = distances[i];
-                    distances[i] = distances[j];
-                    distances[j] = temp;
-
-                    vector<sf::Vector2f> temp2 = facesToDraw[i];
-                    facesToDraw[i] = facesToDraw[j];
-                    facesToDraw[j] = temp2;
-                }
-            }
-        }
-    }
-    */
+    radixSortForFaces(distances, facesToDraw);
 
     for (unsigned int i = 0; i < facesToDraw.size(); i++) {
         sf::ConvexShape face(3);

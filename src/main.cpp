@@ -1,9 +1,13 @@
 #include <SFML/Graphics.hpp>
+#include <bitset>
+#include <iostream>
 
 #include "configuration.hpp"
 #include "events.hpp"
 #include "3DEngine/Camera.hpp"
 #include "3DEngine/Engine3D.hpp"
+
+using namespace std;
 
 int main() {
     auto window = sf::RenderWindow(sf::VideoMode(conf::window_size), "3DEngine", sf::State::Fullscreen);
@@ -28,5 +32,6 @@ int main() {
         Engine3D::draw(window);
 
         window.display();
+
     }
 }
