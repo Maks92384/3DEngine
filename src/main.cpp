@@ -12,8 +12,11 @@ int main() {
     window.setMouseCursorVisible(false);
     sf::Mouse::setPosition(static_cast<sf::Vector2i>(conf::window_size) / 2);
 
-    Engine3D::generateBox("box1", {0, 0, 0}, {3, -1, 3});
-    Engine3D::generateBox("box2", {400, 0, 100}, {1, 3, -3});
+    //Engine3D::generateBox("box1", {0, 0, 0}, {3, -1, 3});
+    //Engine3D::generateBox("box2", {400, 0, 100}, {1, 3, -3});
+
+    //Engine3D::loadFromFile("Cube.obj", "cube");
+    Engine3D::loadFromFile("Cat.obj", "cat");
 
     while (window.isOpen())
     {

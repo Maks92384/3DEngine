@@ -1,6 +1,8 @@
 #include "Engine3D.hpp"
 #include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <iostream>
 #include "Camera.hpp"
 #include "engineConfiguration.hpp"
 #include "functions.hpp"
@@ -100,9 +102,9 @@ void Engine3D::render() {
             const sf::Vector3f pointC = rotatedPoints[face[2]];
 
             sf::Vector3f vectorAB = pointB - pointA;
-            sf::Vector3f vectorAC = pointC - pointA;
+            sf::Vector3f vectorBC = pointB - pointC;
 
-            normals.push_back({vectorAB.y * vectorAC.z - vectorAB.z * vectorAC.y, vectorAB.z * vectorAC.x - vectorAB.x * vectorAC.z, vectorAB.x * vectorAC.y - vectorAB.y * vectorAC.x});
+            normals.push_back({vectorAB.y * vectorBC.z - vectorAB.z * vectorBC.y, vectorAB.z * vectorBC.x - vectorAB.x * vectorBC.z, vectorAB.x * vectorBC.y - vectorAB.y * vectorBC.x});
 
             sf::Vector3f faceCenter = {(pointA.x + pointB.x + pointC.x) / 3, (pointA.y + pointB.y + pointC.y) / 3, (pointA.z + pointB.z + pointC.z) / 3};
 
@@ -118,7 +120,7 @@ void Engine3D::render() {
 
             sf::Vector3f directionToFace = {faceCenter - Camera::getPosition()};
 
-            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) < 90;
+            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) <= 90;
 
 
             if (faceOnScreen && isTheFrontOfTheFace && drawObject) {
@@ -333,7 +335,6 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
     // Sorting
 
     vector<array<uint16_t, 2>> buckets[65536] = {};
-    //static array<vector<vector<sf::Vector2f>>, 65536> faceBuckets;
     vector<vector<vector<sf::Vector2f>>> faceBuckets(65536);
 
     unsigned int index = 0;
@@ -380,4 +381,72 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
     }
 
     reverse(faces.begin(), faces.end());
+}
+
+void Engine3D::loadFromFile(string fileName, string objectName) {
+    fstream file;
+    file.open("../../Models/" + fileName);
+
+    if (!file) {
+        cout<<"Unable to open file: " + fileName<<endl;
+        return;
+    }
+
+    vector<sf::Vector3f> points;
+    vector<vector<unsigned int>> faces;
+
+    string line;
+
+    while (getline(file, line)) {
+        string numberAsString = "";
+        vector<float> point;
+        vector<unsigned int> face;
+
+        bool wait = false;
+
+        if (line.size() >= 2) {
+            if (line[0] == 'v' && line[1] == ' ') {
+                for (unsigned int i = 2; i < line.size(); i++) {
+                    if (line[i] == ' ') {
+                    point.push_back(stof(numberAsString));
+                    numberAsString = "";
+                    } else {
+                    numberAsString += line[i];
+                    }
+                }
+                point.push_back(stof(numberAsString));
+                numberAsString = "";
+
+                if (point.size() >= 3) {
+                    points.push_back(sf::Vector3f(point[0], point[1], point[2]));
+                }
+            }
+
+            numberAsString = "";
+
+            if (line[0] == 'f' && line[1] == ' ') {
+                for (unsigned int i = 2; i < line.size(); i++) {
+                    if (line[i] == ' ') {
+                        face.push_back(stoi(numberAsString) - 1);
+                        numberAsString = "";
+                        wait = false;
+                    } else if (line[i] == '/') {
+                        wait = true;
+                    } else if (!wait) {
+                        numberAsString += line[i];
+                    }
+                }
+                face.push_back(stoi(numberAsString) - 1);
+                numberAsString = "";
+
+                if (face.size() == 3) {
+                    faces.push_back(face);
+                }
+            }
+        }
+    }
+
+    file.close();
+
+    makeNewObject(objectName, points, faces, true);
 }

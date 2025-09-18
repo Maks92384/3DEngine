@@ -25,6 +25,7 @@ public:
     static void makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces);
 
     static void generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions);
+    static void loadFromFile(string path, string name);
 
     static float getWindowSize();
 };

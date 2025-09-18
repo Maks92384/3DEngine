@@ -48,8 +48,9 @@ float Camera::getFov() {
 }
 
 void Camera::updateCamera(sf::RenderWindow& window) {
-    rotation[0] = (rotationBuffer.x + conf::window_size_f.x / 2 - sf::Mouse::getPosition(window).x) * engineConf::DPI / 1000;
-    rotation[1] = (rotationBuffer.y + conf::window_size_f.y / 2 - sf::Mouse::getPosition(window).y) * engineConf::DPI / 1000;
+    rotation = engineConf::initialCameraRotation;
+    rotation[0] += (rotationBuffer.x + conf::window_size_f.x / 2 - sf::Mouse::getPosition(window).x) * engineConf::DPI / 1000;
+    rotation[1] += (rotationBuffer.y + conf::window_size_f.y / 2 - sf::Mouse::getPosition(window).y) * engineConf::DPI / 1000;
 
     if (distanceBetween(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)), conf::window_size_f / 2.0f) > 100) {
         rotationBuffer -= static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)) - conf::window_size_f / 2.0f;
