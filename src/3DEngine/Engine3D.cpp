@@ -139,11 +139,16 @@ void Engine3D::draw(sf::RenderWindow& window) {
 
     sf::ConvexShape face(3);
     face.setFillColor(sf::Color(255, 100, 0));
-
     sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
 
-    for (unsigned int i = 0; i < facesToDraw.size(); i++) {
+    sf::Color outlineColor(70, 70, 70);
 
+    outline[0].color = outlineColor;
+    outline[1].color = outlineColor;
+    outline[2].color = outlineColor;
+    outline[3].color = outlineColor;
+
+    for (unsigned int i = 0; i < facesToDraw.size(); i++) {
         face.setPoint(0, facesToDraw[i][0]);
         face.setPoint(1, facesToDraw[i][1]);
         face.setPoint(2, facesToDraw[i][2]);
