@@ -1,8 +1,4 @@
 #include "Camera.hpp"
-
-#include <cmath>
-#include <iostream>
-
 #include "Engine3D.hpp"
 #include "engineConfiguration.hpp"
 #include "functions.hpp"

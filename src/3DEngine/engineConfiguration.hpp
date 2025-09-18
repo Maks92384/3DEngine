@@ -1,5 +1,4 @@
 #pragma once
-#include "Camera.hpp"
 
 namespace engineConf {
     // Overall engine configuration

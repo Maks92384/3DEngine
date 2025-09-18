@@ -1,7 +1,6 @@
 #include "Engine3D.hpp"
+#include <algorithm>
 #include <cmath>
-#include <iostream>
-
 #include "Camera.hpp"
 #include "engineConfiguration.hpp"
 #include "functions.hpp"
@@ -16,11 +15,11 @@ vector<float> Engine3D::distances;
 
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) {
-    objects.try_emplace(name, Object3D(std::move(points), std::move(faces), enabled));
+    objects[name] = Object3D(points, faces, enabled);
 }
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces) {
-    objects.emplace(name, Object3D(std::move(points), std::move(faces)));
+    makeNewObject(name, points, faces, false);
 }
 
 
@@ -136,19 +135,19 @@ void Engine3D::render() {
 void Engine3D::draw(sf::RenderWindow& window) {
     radixSortForFaces(distances, facesToDraw);
 
+    sf::ConvexShape face(3);
+    face.setFillColor(sf::Color(255, 100, 0));
+
+    sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
+
     for (unsigned int i = 0; i < facesToDraw.size(); i++) {
-        sf::ConvexShape face(3);
 
         face.setPoint(0, facesToDraw[i][0]);
         face.setPoint(1, facesToDraw[i][1]);
         face.setPoint(2, facesToDraw[i][2]);
 
-        face.setFillColor(sf::Color(255, 100, 0));
 
         window.draw(face);
-
-
-        sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
 
         outline[0].position = facesToDraw[i][0];
         outline[1].position = facesToDraw[i][1];
@@ -215,7 +214,6 @@ void Engine3D::draw(sf::RenderWindow& window) {
 }
 
 sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
-    sf::Vector2f cameraSize = {0, 0};
     float fovInRadians = Camera::getFov() * M_PI / 180;
 
     point3D -= Camera::getPosition();
@@ -319,4 +317,67 @@ void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dime
     makeNewObject(name, points, faces, true);
 
     objects[name].setPosition(position);
+}
+
+void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces) {
+    vector<array<uint16_t, 2>> distancesAsUint16; // size is the size of distances
+    array<uint16_t, 2> tempDistanceAsInt16;
+
+    for (float& distance : distances) {
+        tempDistanceAsInt16[0] = *reinterpret_cast<uint32_t*>(&distance) / 65536;
+        tempDistanceAsInt16[1] = *reinterpret_cast<uint32_t*>(&distance) % 65536;
+        distancesAsUint16.push_back(tempDistanceAsInt16);
+    }
+
+
+    // Sorting
+
+    vector<array<uint16_t, 2>> buckets[65536] = {};
+    //static array<vector<vector<sf::Vector2f>>, 65536> faceBuckets;
+    vector<vector<vector<sf::Vector2f>>> faceBuckets(65536);
+
+    unsigned int index = 0;
+    for (array<uint16_t, 2>& distance : distancesAsUint16) {
+        buckets[distance[1]].push_back(distance);
+        faceBuckets[distance[1]].push_back(faces[index]);
+        index++;
+    }
+
+    distancesAsUint16.clear();
+    faces.clear();
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        for (uint16_t i = 0; i < bucket.size(); i++) {
+            distancesAsUint16.push_back(bucket[i]);
+            faces.push_back(faceBuckets[index][i]);
+        }
+        index++;
+    }
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        bucket.clear();
+        faceBuckets[index].clear();
+        index++;
+    }
+
+    index = 0;
+    for (array<uint16_t, 2>& distance : distancesAsUint16) {
+        buckets[distance[0]].push_back(distance);
+        faceBuckets[distance[0]].push_back(faces[index]);
+        index++;
+    }
+
+    faces.clear();
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        for (uint16_t i = 0; i < bucket.size(); i++) {
+            faces.push_back(faceBuckets[index][i]);
+        }
+        index++;
+    }
+
+    reverse(faces.begin(), faces.end());
 }

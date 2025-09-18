@@ -1,7 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <bitset>
-#include <iostream>
-
 #include "configuration.hpp"
 #include "events.hpp"
 #include "3DEngine/Camera.hpp"
@@ -32,6 +29,5 @@ int main() {
         Engine3D::draw(window);
 
         window.display();
-
     }
 }

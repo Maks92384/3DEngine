@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
-
-#include "SFML/System/Vector3.hpp"
+#include <SFML/Graphics.hpp>
 
 using namespace std;
 
