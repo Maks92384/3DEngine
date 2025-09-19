@@ -1,7 +1,8 @@
 #include "Engine3D.hpp"
+#include <algorithm>
 #include <cmath>
+#include <fstream>
 #include <iostream>
-
 #include "Camera.hpp"
 #include "engineConfiguration.hpp"
 #include "functions.hpp"
@@ -14,15 +15,13 @@ vector<sf::Vector2f> Engine3D::pointsToDraw;
 vector<vector<sf::Vector2f>> Engine3D::facesToDraw;
 vector<float> Engine3D::distances;
 
-float Engine3D::windowSize = min(conf::window_size_f.x, conf::window_size_f.y);
-
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) {
-    objects.try_emplace(name, Object3D(std::move(points), std::move(faces), enabled));
+    objects[name] = Object3D(points, faces, enabled);
 }
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces) {
-    objects.emplace(name, Object3D(std::move(points), std::move(faces)));
+    makeNewObject(name, points, faces, false);
 }
 
 
@@ -103,19 +102,9 @@ void Engine3D::render() {
             const sf::Vector3f pointC = rotatedPoints[face[2]];
 
             sf::Vector3f vectorAB = pointB - pointA;
-            sf::Vector3f vectorAC = pointC - pointA;
+            sf::Vector3f vectorBC = pointB - pointC;
 
-            normals.push_back({vectorAB.y * vectorAC.z - vectorAB.z * vectorAC.y, vectorAB.z * vectorAC.x - vectorAB.x * vectorAC.z, vectorAB.x * vectorAC.y - vectorAB.y * vectorAC.x});
-
-            /* displaying normals (not working)
-            sf::Vector2f normalToDraw = transform(normals.back());
-
-            normalToDraw.x /= 4;
-            normalToDraw.y /= 4;
-
-            // display the Vector
-
-            */
+            normals.push_back({vectorAB.y * vectorBC.z - vectorAB.z * vectorBC.y, vectorAB.z * vectorBC.x - vectorAB.x * vectorBC.z, vectorAB.x * vectorBC.y - vectorAB.y * vectorBC.x});
 
             sf::Vector3f faceCenter = {(pointA.x + pointB.x + pointC.x) / 3, (pointA.y + pointB.y + pointC.y) / 3, (pointA.z + pointB.z + pointC.z) / 3};
 
@@ -123,15 +112,15 @@ void Engine3D::render() {
             const sf::Vector2f point2D_B = pointsPositions[face[1]];
             const sf::Vector2f point2D_C = pointsPositions[face[2]];
 
-            bool pointAOnScreen = point2D_A.x > 0 && point2D_A.y > 0 && point2D_A.x < windowSize && point2D_A.y < windowSize;
-            bool pointBOnScreen = point2D_B.x > 0 && point2D_B.y > 0 && point2D_B.x < windowSize && point2D_B.y < windowSize;
-            bool pointCOnScreen = point2D_C.x > 0 && point2D_C.y > 0 && point2D_C.x < windowSize && point2D_C.y < windowSize;
+            bool pointAOnScreen = point2D_A.x > 0 && point2D_A.y > 0 && point2D_A.x < conf::window_size_f.x && point2D_A.y < conf::window_size_f.y;
+            bool pointBOnScreen = point2D_B.x > 0 && point2D_B.y > 0 && point2D_B.x < conf::window_size_f.x && point2D_B.y < conf::window_size_f.y;
+            bool pointCOnScreen = point2D_C.x > 0 && point2D_C.y > 0 && point2D_C.x < conf::window_size_f.x && point2D_C.y < conf::window_size_f.y;
 
             bool faceOnScreen = pointAOnScreen || pointBOnScreen || pointCOnScreen;
 
             sf::Vector3f directionToFace = {faceCenter - Camera::getPosition()};
 
-            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) < 90;
+            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) <= 90;
 
 
             if (faceOnScreen && isTheFrontOfTheFace && drawObject) {
@@ -146,37 +135,26 @@ void Engine3D::render() {
 }
 
 void Engine3D::draw(sf::RenderWindow& window) {
-    /*
-    if (distances.size() >= 2) {
-        for (unsigned int i = 0; i < distances.size() - 1; i++) {
-            for (unsigned int j = i + 1; j < distances.size(); j++) {
-                if (distances[i] < distances[j]) {
-                    float temp = distances[i];
-                    distances[i] = distances[j];
-                    distances[j] = temp;
+    radixSortForFaces(distances, facesToDraw);
 
-                    vector<sf::Vector2f> temp2 = facesToDraw[i];
-                    facesToDraw[i] = facesToDraw[j];
-                    facesToDraw[j] = temp2;
-                }
-            }
-        }
-    }
-    */
+    sf::ConvexShape face(3);
+    face.setFillColor(sf::Color(255, 100, 0));
+    sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
+
+    sf::Color outlineColor(70, 70, 70);
+
+    outline[0].color = outlineColor;
+    outline[1].color = outlineColor;
+    outline[2].color = outlineColor;
+    outline[3].color = outlineColor;
 
     for (unsigned int i = 0; i < facesToDraw.size(); i++) {
-        sf::ConvexShape face(3);
-
         face.setPoint(0, facesToDraw[i][0]);
         face.setPoint(1, facesToDraw[i][1]);
         face.setPoint(2, facesToDraw[i][2]);
 
-        face.setFillColor(sf::Color(255, 100, 0));
 
         window.draw(face);
-
-
-        sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
 
         outline[0].position = facesToDraw[i][0];
         outline[1].position = facesToDraw[i][1];
@@ -207,39 +185,6 @@ void Engine3D::draw(sf::RenderWindow& window) {
     // Debug Mode
 
     if (engineConf::debugMode) {
-        // vision border
-
-        float margin = 0;//-((1 - Camera::getFov() / 180) * M_PI / 2) / (M_PI / 2 - ((1 - Camera::getFov() / 180) * M_PI / 2)) * windowSize / 2;
-
-        sf::RectangleShape visionBorder(sf::Vector2f(windowSize - 2 * margin - 4, windowSize - 2 * margin - 4));
-        visionBorder.setFillColor(sf::Color(0, 0, 0, 0));
-        visionBorder.setOutlineThickness(2);
-        visionBorder.setOutlineColor(sf::Color(255, 0, 0));
-        visionBorder.setPosition({margin + 2, margin + 2});
-
-        window.draw(visionBorder);
-
-        // positive XYZ lines
-
-        sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
-
-        Axes[0].position = transform({0, 0, 0});
-        Axes[1].position = transform({50, 0, 0});
-        Axes[0].color = sf::Color(255, 0, 0);
-        Axes[1].color = sf::Color(255, 0, 0);
-
-        Axes[2].position = transform({0, 0, 0});
-        Axes[3].position = transform({0, 50, 0});
-        Axes[2].color = sf::Color(0, 255, 0);
-        Axes[3].color = sf::Color(0, 255, 0);
-
-        Axes[4].position = transform({0, 0, 0});
-        Axes[5].position = transform({0, 0, 50});
-        Axes[4].color = sf::Color(0, 0, 255);
-        Axes[5].color = sf::Color(0, 0, 255);
-
-        window.draw(Axes);
-
         // World center
 
         sf::CircleShape worldCenter(5);
@@ -250,39 +195,50 @@ void Engine3D::draw(sf::RenderWindow& window) {
         worldCenter.setOrigin({5, 5});
 
         window.draw(worldCenter);
+
+
+        // positive XYZ lines
+
+        sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
+
+        Axes[0].position = conf::window_size_f / 2.0f;
+        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({50, 0, 0}, Camera::getRotation()).x, unRotate({50, 0, 0}, Camera::getRotation()).y);
+        Axes[0].color = sf::Color(255, 0, 0);
+        Axes[1].color = sf::Color(255, 0, 0);
+
+        Axes[2].position = conf::window_size_f / 2.0f;
+        Axes[3].position = conf::window_size_f / 2.0f - sf::Vector2f(unRotate({0, 50, 0}, Camera::getRotation()).x, unRotate({0, 50, 0}, Camera::getRotation()).y);
+        Axes[2].color = sf::Color(0, 255, 0);
+        Axes[3].color = sf::Color(0, 255, 0);
+
+        Axes[4].position = conf::window_size_f / 2.0f;
+        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({0, 0, 50}, Camera::getRotation()).x, unRotate({0, 0, 50}, Camera::getRotation()).y);
+        Axes[4].color = sf::Color(0, 0, 255);
+        Axes[5].color = sf::Color(0, 0, 255);
+
+        window.draw(Axes);
     }
 }
 
 sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
-    sf::Vector3f xAxis = {1, 0, 0};
-    sf::Vector3f yAxis = {0, 1, 0};
-    sf::Vector3f zAxis = {0, 0, 1};
+    float fovInRadians = Camera::getFov() * M_PI / 180;
 
-    sf::Vector3f vectorToTransform = point3D - Camera::getPosition();
+    point3D -= Camera::getPosition();
 
-    vectorToTransform = unRotate(vectorToTransform, Camera::getRotation());
+    point3D = unRotate(point3D, Camera::getRotation());
 
-    float copyOfTheZValue = vectorToTransform.z;
+    float pointDistance = -point3D.z;
 
+    sf::Vector2f scaledCameraSize = {tan(fovInRadians / 2) * pointDistance * 2, tan(fovInRadians / 2) * conf::window_size_f.y / conf::window_size_f.x * pointDistance * 2};
 
-    vectorToTransform.z = 0;
+    sf::Vector2f transformedPoint = {point3D.x * conf::window_size_f.x / scaledCameraSize.x, point3D.y * conf::window_size_f.y / scaledCameraSize.y};
 
-    float rollAngle = angleBetween(yAxis, vectorToTransform);
+    if (pointDistance < 0) {
+        transformedPoint.x *= 1000000;
+        transformedPoint.y *= 1000000;
+    }
 
-    if (vectorToTransform.x == 0 && vectorToTransform.y == 0)
-        rollAngle = 0;
-
-    if (angleBetween(-xAxis, vectorToTransform) > 90)
-        rollAngle *= -1;
-
-    vectorToTransform.z = copyOfTheZValue;
-
-
-    sf::Vector3f transformedVector = {0, angleBetween(-zAxis, vectorToTransform) / (90 * Camera::getFov() / 180), 0};
-
-    transformedVector = rotate(transformedVector, {0, 0, rollAngle});
-
-    return {windowSize / 2 * (1 + transformedVector.x), windowSize / 2 * (1 - transformedVector.y)};
+    return {conf::window_size_f.x / 2 + transformedPoint.x , conf::window_size_f.y / 2  - transformedPoint.y};
 }
 
 void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions /* (x=Length, y=Height, z=Depth) */ ) {
@@ -370,6 +326,132 @@ void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dime
     objects[name].setPosition(position);
 }
 
-float Engine3D::getWindowSize() {
-    return windowSize;
+void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces) {
+    vector<array<uint16_t, 2>> distancesAsUint16; // size is the size of distances
+    array<uint16_t, 2> tempDistanceAsInt16;
+
+    for (float& distance : distances) {
+        tempDistanceAsInt16[0] = *reinterpret_cast<uint32_t*>(&distance) / 65536;
+        tempDistanceAsInt16[1] = *reinterpret_cast<uint32_t*>(&distance) % 65536;
+        distancesAsUint16.push_back(tempDistanceAsInt16);
+    }
+
+
+    // Sorting
+
+    vector<array<uint16_t, 2>> buckets[65536] = {};
+    vector<vector<vector<sf::Vector2f>>> faceBuckets(65536);
+
+    unsigned int index = 0;
+    for (array<uint16_t, 2>& distance : distancesAsUint16) {
+        buckets[distance[1]].push_back(distance);
+        faceBuckets[distance[1]].push_back(faces[index]);
+        index++;
+    }
+
+    distancesAsUint16.clear();
+    faces.clear();
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        for (uint16_t i = 0; i < bucket.size(); i++) {
+            distancesAsUint16.push_back(bucket[i]);
+            faces.push_back(faceBuckets[index][i]);
+        }
+        index++;
+    }
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        bucket.clear();
+        faceBuckets[index].clear();
+        index++;
+    }
+
+    index = 0;
+    for (array<uint16_t, 2>& distance : distancesAsUint16) {
+        buckets[distance[0]].push_back(distance);
+        faceBuckets[distance[0]].push_back(faces[index]);
+        index++;
+    }
+
+    faces.clear();
+
+    index = 0;
+    for (vector<array<uint16_t, 2>>& bucket : buckets) {
+        for (uint16_t i = 0; i < bucket.size(); i++) {
+            faces.push_back(faceBuckets[index][i]);
+        }
+        index++;
+    }
+
+    reverse(faces.begin(), faces.end());
+}
+
+void Engine3D::loadFromFile(string fileName, string objectName) {
+    fstream file;
+    file.open("../../Models/" + fileName);
+
+    if (!file) {
+        cout<<"Unable to open file: " + fileName<<endl;
+        return;
+    }
+
+    vector<sf::Vector3f> points;
+    vector<vector<unsigned int>> faces;
+
+    string line;
+
+    while (getline(file, line)) {
+        string numberAsString = "";
+        vector<float> point;
+        vector<unsigned int> face;
+
+        bool wait = false;
+
+        if (line.size() >= 2) {
+            if (line[0] == 'v' && line[1] == ' ') {
+                for (unsigned int i = 2; i < line.size(); i++) {
+                    if (line[i] == ' ') {
+                    point.push_back(stof(numberAsString));
+                    numberAsString = "";
+                    } else {
+                    numberAsString += line[i];
+                    }
+                }
+                point.push_back(stof(numberAsString));
+                numberAsString = "";
+
+                if (point.size() >= 3) {
+                    points.push_back(sf::Vector3f(point[0], point[1], point[2]));
+                }
+            }
+
+            numberAsString = "";
+
+            if (line[0] == 'f' && line[1] == ' ') {
+                for (unsigned int i = 2; i < line.size(); i++) {
+                    if (line[i] == ' ') {
+                        face.push_back(stoi(numberAsString) - 1);
+                        numberAsString = "";
+                        wait = false;
+                    } else if (line[i] == '/') {
+                        wait = true;
+                    } else if (!wait) {
+                        numberAsString += line[i];
+                    }
+                }
+                face.push_back(stoi(numberAsString) - 1);
+                numberAsString = "";
+
+                if (face.size() == 3) {
+                    faces.push_back(face);
+                }
+            }
+        }
+    }
+
+    file.close();
+
+    makeNewObject(objectName, points, faces, true);
 }

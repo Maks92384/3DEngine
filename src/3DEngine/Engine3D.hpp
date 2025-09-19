@@ -1,6 +1,4 @@
 #pragma once
-#include <map>
-
 #include "Object3D.hpp"
 #include "SFML/Graphics.hpp"
 
@@ -14,9 +12,9 @@ class Engine3D {
     static vector<vector<sf::Vector2f>> facesToDraw;
     static vector<float> distances;
 
-    static float windowSize; // to remove
-
     static sf::Vector2f transform(sf::Vector3f point);
+
+    static void radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces);
 public:
     static sf::Vector3f rotate(sf::Vector3f initialDirection, vector<float> rotation);
     static sf::Vector3f unRotate(sf::Vector3f initialDirection, vector<float> rotation);
@@ -27,6 +25,7 @@ public:
     static void makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces);
 
     static void generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions);
+    static void loadFromFile(string path, string name);
 
     static float getWindowSize();
 };

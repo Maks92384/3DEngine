@@ -1,12 +1,12 @@
 #include "Camera.hpp"
-
-#include <cmath>
-
 #include "Engine3D.hpp"
 #include "engineConfiguration.hpp"
+#include "functions.hpp"
+#include "../configuration.hpp"
 
 sf::Vector3f Camera::position = engineConf::initialCameraPosition;
 vector<float> Camera::rotation = engineConf::initialCameraRotation;
+sf::Vector2f Camera::rotationBuffer = {0, 0};
 sf::Vector3f Camera::direction = Engine3D::rotate({0, 0, -1}, rotation);
 
 float Camera::fov = engineConf::fov;
@@ -48,8 +48,14 @@ float Camera::getFov() {
 }
 
 void Camera::updateCamera(sf::RenderWindow& window) {
-    rotation[0] = -(sf::Mouse::getPosition(window).x - Engine3D::getWindowSize() / 2) / Engine3D::getWindowSize() * 10 * 180 / M_PI;
-    rotation[1] = -(sf::Mouse::getPosition(window).y - Engine3D::getWindowSize() / 2) / Engine3D::getWindowSize() * 10 * 180 / M_PI;
+    rotation = engineConf::initialCameraRotation;
+    rotation[0] += (rotationBuffer.x + conf::window_size_f.x / 2 - sf::Mouse::getPosition(window).x) * engineConf::DPI / 1000;
+    rotation[1] += (rotationBuffer.y + conf::window_size_f.y / 2 - sf::Mouse::getPosition(window).y) * engineConf::DPI / 1000;
+
+    if (distanceBetween(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)), conf::window_size_f / 2.0f) > 100) {
+        rotationBuffer -= static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)) - conf::window_size_f / 2.0f;
+        sf::Mouse::setPosition(static_cast<sf::Vector2i>(conf::window_size_f) / 2);
+    }
 
 
     sf::Vector3f movementDirection = sf::Vector3f(direction.x, 0, direction.z).normalized();

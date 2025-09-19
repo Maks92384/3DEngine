@@ -1,5 +1,4 @@
 #include "Object3D.hpp"
-
 #include "engineConfiguration.hpp"
 
 Object3D::Object3D() = default;

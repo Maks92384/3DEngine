@@ -1,6 +1,8 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 
+using namespace std;
+
 float angleBetween(sf::Vector2f vectorA, sf::Vector2f vectorB);
 
 float angleBetween(sf::Vector3f vectorA, sf::Vector3f vectorB);

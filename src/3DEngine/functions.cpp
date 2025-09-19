@@ -1,6 +1,7 @@
 #include "functions.hpp"
 #include <cmath>
 
+
 float angleBetween(sf::Vector3f vectorA, sf::Vector3f vectorB) {  // returns an absolute value of an angle between two vectors, 3D version
     return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length()) * 180 / M_PI;
 }
@@ -16,3 +17,4 @@ float distanceBetween(sf::Vector2f pointA, sf::Vector2f pointB) {
 float distanceBetween(sf::Vector3f pointA, sf::Vector3f pointB) {
     return sqrt(pow(pointA.x - pointB.x, 2) + pow(pointA.y - pointB.y, 2) + pow(pointA.z - pointB.z, 2));
 }
+
