@@ -1,6 +1,6 @@
 #pragma once
 #include "Object3D.hpp"
-#include "SFML/Graphics.hpp"
+#include <SFML/Graphics.hpp>
 
 using namespace std;
 
