@@ -12,7 +12,7 @@ FetchContent_Declare(SFML
         SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(main src/main.cpp
+add_executable(demo src/main.cpp
         src/events.cpp
         src/events.hpp
         src/configuration.hpp
@@ -26,5 +26,10 @@ add_executable(main src/main.cpp
         src/3DEngine/functions.cpp
         src/3DEngine/functions.hpp
 )
-target_compile_features(main PRIVATE cxx_std_17)
-target_link_libraries(main PRIVATE SFML::Graphics)
+
+target_compile_features(demo PRIVATE cxx_std_17)
+target_link_libraries(demo PRIVATE SFML::Graphics)
+
+file(GLOB SRC_FILES src/3DEngine/*.cpp)
+add_library(3DEngine STATIC ${SRC_FILES})
+target_include_directories(3DEngine PUBLIC include)
