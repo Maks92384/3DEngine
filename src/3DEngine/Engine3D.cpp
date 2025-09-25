@@ -17,6 +17,15 @@ vector<float> Engine3D::distances;
 
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) {
+    for (unsigned int i = 0 ; i < faces.size(); i++) {
+        if (faces[i].size() >= 4) {
+            vector<unsigned int> face_copy = faces[i];
+            face_copy.erase(face_copy.begin() + 1);
+            faces.push_back(face_copy);
+            faces[i].resize(3);
+        }
+    }
+
     objects[name] = Object3D(points, faces, enabled);
 }
 
@@ -444,7 +453,7 @@ void Engine3D::loadFromFile(string fileName, string objectName) {
                 face.push_back(stoi(numberAsString) - 1);
                 numberAsString = "";
 
-                if (face.size() == 3) {
+                if (face.size() >= 3) {
                     faces.push_back(face);
                 }
             }

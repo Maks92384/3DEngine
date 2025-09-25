@@ -16,6 +16,8 @@ int main() {
     //Engine3D::generateBox("box2", {400, 0, 100}, {1, 3, -3});
 
     //Engine3D::loadFromFile("Cube.obj", "cube");
+    //Engine3D::loadFromFile("Cube_quads.obj", "cube2");
+    //Engine3D::loadFromFile("ngon_faces_demo.obj", "ngon_test");
     Engine3D::loadFromFile("Cat.obj", "cat");
 
     while (window.isOpen())
