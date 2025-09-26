@@ -332,7 +332,7 @@ void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dime
 
     int dimensionsSign = dimensions.x * dimensions.y * dimensions.z / abs(dimensions.x * dimensions.y * dimensions.z);
 
-    if (dimensionsSign == 1) {
+    if (dimensionsSign == -1) {
         for (auto& face : faces) {
             unsigned int temp = face[0];
             face[0] = face[1];
