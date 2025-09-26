@@ -27,5 +27,7 @@ public:
     static void generateBox(string name, sf::Vector3f position, sf::Vector3i dimensions);
     static void loadFromFile(string path, string name);
 
+    static Object3D& getObject(string name);
+
     static float getWindowSize();
 };

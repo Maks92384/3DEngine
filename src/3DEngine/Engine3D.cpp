@@ -464,3 +464,7 @@ void Engine3D::loadFromFile(string fileName, string objectName) {
 
     makeNewObject(objectName, points, faces, true);
 }
+
+Object3D& Engine3D::getObject(string name) {
+    return objects[name];
+}
