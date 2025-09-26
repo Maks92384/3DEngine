@@ -15,6 +15,16 @@ vector<sf::Vector2f> Engine3D::pointsToDraw;
 vector<vector<sf::Vector2f>> Engine3D::facesToDraw;
 vector<float> Engine3D::distances;
 
+bool Engine3D::debugMode = engineConf::debugMode;
+
+void Engine3D::enableDebugMode() {
+    debugMode = true;
+}
+
+void Engine3D::disableDebugMode() {
+    debugMode = false;
+}
+
 
 void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) {
     for (unsigned int i = 0 ; i < faces.size(); i++) {
@@ -193,7 +203,7 @@ void Engine3D::draw(sf::RenderWindow& window) {
 
     // Debug Mode
 
-    if (engineConf::debugMode) {
+    if (debugMode) {
         // World center
 
         sf::CircleShape worldCenter(5);

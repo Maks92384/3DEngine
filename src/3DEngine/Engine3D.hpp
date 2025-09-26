@@ -15,6 +15,8 @@ class Engine3D {
     static sf::Vector2f transform(sf::Vector3f point);
 
     static void radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces);
+
+    static bool debugMode;
 public:
     static sf::Vector3f rotate(sf::Vector3f initialDirection, vector<float> rotation);
     static sf::Vector3f unRotate(sf::Vector3f initialDirection, vector<float> rotation);
@@ -28,6 +30,9 @@ public:
     static void loadFromFile(string path, string name);
 
     static Object3D& getObject(string name);
+
+    static void enableDebugMode();
+    static void disableDebugMode();
 
     static float getWindowSize();
 };
