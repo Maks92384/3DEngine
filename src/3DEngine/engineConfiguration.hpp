@@ -1,5 +1,6 @@
 #pragma once
 #include <SFML\Graphics.hpp>
+#include <cmath>
 
 namespace engineConf {
     // Overall engine configuration
@@ -11,7 +12,7 @@ namespace engineConf {
 
     static const sf::Vector3f initialCameraPosition = {0, 0, 500};
     static const vector<float> initialCameraRotation = {0, 0, 0};
-    static const float fov = 120; // fov in degrees
+    static const float fov = M_PI * 2 / 3; // fov in radians
     static const float movementSpeed = 10.0f;
     static const float DPI = 100;
 

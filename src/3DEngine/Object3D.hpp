@@ -8,7 +8,7 @@ class Object3D {
     float scale;
 
     sf::Vector3f position;
-    sf::Vector3f rotation; // Euler vector where its magnitude is the angle in degrees
+    sf::Vector3f rotation; // Euler vector where its magnitude is the angle in radians
 
     vector<sf::Vector3f> points;
 

@@ -2,12 +2,12 @@
 #include <cmath>
 
 
-float angleBetween(sf::Vector3f vectorA, sf::Vector3f vectorB) {  // returns an absolute value of an angle between two vectors, 3D version
-    return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length()) * 180 / M_PI;
+float angleBetween(sf::Vector3f vectorA, sf::Vector3f vectorB) {  // returns an absolute value of an angle between two vectors in radians, 3D version
+    return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length());
 }
 
-float angleBetween(sf::Vector2f vectorA, sf::Vector2f vectorB) {  // returns an absolute value of an angle between two vectors, 2D version
-    return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length()) * 180 / M_PI;
+float angleBetween(sf::Vector2f vectorA, sf::Vector2f vectorB) {  // returns an absolute value of an angle between two vectors in radians, 2D version
+    return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length());
 }
 
 float distanceBetween(sf::Vector2f pointA, sf::Vector2f pointB) {

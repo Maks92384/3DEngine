@@ -44,7 +44,7 @@ void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<ve
 }
 
 sf::Vector3f Engine3D::rotateWithEulerVector(sf::Vector3f initialDirection, sf::Vector3f e) {
-    float angle = e.length() * M_PI / 180;
+    float angle = e.length();
 
     if (e.length() != 0)
         e = e.normalized();
@@ -67,9 +67,9 @@ sf::Vector3f Engine3D::rotateWithEulerVector(sf::Vector3f initialDirection, sf::
 }
 
 sf::Vector3f Engine3D::rotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation) {
-    float yaw = rotation[0] * M_PI / 180;
-    float pitch = rotation[1] * M_PI / 180;
-    float roll = rotation[2] * M_PI / 180;
+    float yaw = rotation[0];
+    float pitch = rotation[1];
+    float roll = rotation[2];
 
     float rotationMatrix[3][3] = {
         {cos(yaw) * cos(roll) + sin(yaw) * sin(pitch) * sin(roll), cos(roll) * sin(yaw) * sin(pitch) - cos(yaw) * sin(roll), cos(pitch) * sin(yaw)},
@@ -87,9 +87,9 @@ sf::Vector3f Engine3D::rotateWithEulerAngles(sf::Vector3f initialDirection, vect
 }
 
 sf::Vector3f Engine3D::unRotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation) {
-    float yaw = -rotation[0] * M_PI / 180;
-    float pitch = -rotation[1] * M_PI / 180;
-    float roll = -rotation[2] * M_PI / 180;
+    float yaw = -rotation[0];
+    float pitch = -rotation[1];
+    float roll = -rotation[2];
 
     float rotationMatrix[3][3] = {
       {cos(roll) * cos(yaw) - sin(roll) * sin(pitch) * sin(yaw), -cos(pitch) * sin(roll), cos(roll) * sin(yaw) + cos(yaw) * sin(roll) * sin(pitch)},
@@ -162,7 +162,7 @@ void Engine3D::render() {
 
             sf::Vector3f directionToFace = {faceCenter - Camera::getPosition()};
 
-            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) <= 90;
+            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) <= M_PI / 2;
 
 
             if (faceOnScreen && isTheFrontOfTheFace && drawObject) {
@@ -263,7 +263,7 @@ void Engine3D::draw(sf::RenderWindow& window) {
 }
 
 sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
-    float fovInRadians = Camera::getFov() * M_PI / 180;
+    float fovInRadians = Camera::getFov();
 
     point3D -= Camera::getPosition();
 
