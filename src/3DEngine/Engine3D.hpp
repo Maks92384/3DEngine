@@ -18,8 +18,9 @@ class Engine3D {
 
     static bool debugMode;
 public:
-    static sf::Vector3f rotate(sf::Vector3f initialDirection, vector<float> rotation);
-    static sf::Vector3f unRotate(sf::Vector3f initialDirection, vector<float> rotation);
+    static sf::Vector3f rotateWithEulerVector(sf::Vector3f initialDirection, sf::Vector3f e);
+    static sf::Vector3f rotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation);
+    static sf::Vector3f unRotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation);
 
     static void render();
     static void draw(sf::RenderWindow& window);

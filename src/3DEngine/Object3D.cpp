@@ -3,7 +3,7 @@
 
 Object3D::Object3D() = default;
 
-Object3D::Object3D(vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) : points(points), faces(faces), enabled(enabled), scale(engineConf::objectScale), position({0, 0, 0}), rotation(3, 0.0f) {}
+Object3D::Object3D(vector<sf::Vector3f> points, vector<vector<unsigned int>> faces, bool enabled) : points(points), faces(faces), enabled(enabled), scale(engineConf::objectScale), position({0, 0, 0}), rotation({0, 0, 0}) {}
 
 Object3D::Object3D(vector<sf::Vector3f> points, vector<vector<unsigned int>> faces) : Object3D(points, faces, false) {}
 
@@ -17,7 +17,7 @@ void Object3D::setPosition(sf::Vector3f newPosition) {
     position = newPosition;
 }
 
-void Object3D::setRotation(vector<float> newRotation) {
+void Object3D::setRotation(sf::Vector3f newRotation) {
     rotation = newRotation;
 }
 
@@ -38,7 +38,7 @@ sf::Vector3f Object3D::getPosition() const  {
     return position;
 }
 
-vector<float> Object3D::getRotation() const  {
+sf::Vector3f Object3D::getRotation() const  {
     return rotation;
 }
 

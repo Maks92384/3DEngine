@@ -8,7 +8,7 @@ class Object3D {
     float scale;
 
     sf::Vector3f position;
-    vector<float> rotation;
+    sf::Vector3f rotation; // Euler vector where its magnitude is the angle in degrees
 
     vector<sf::Vector3f> points;
 
@@ -22,13 +22,13 @@ public:
 
     void setScale(float newScale);
     void setPosition(sf::Vector3f newPosition);
-    void setRotation(vector<float> newRotation);
+    void setRotation(sf::Vector3f newRotation);
     void enable();
     void disable();
 
     float getScale() const;
     sf::Vector3f getPosition() const;
-    vector<float> getRotation() const;
+    sf::Vector3f getRotation() const;
     vector<sf::Vector3f> getPoints() const;
     vector<vector<unsigned int>> getFaces() const;
     bool isEnabled();

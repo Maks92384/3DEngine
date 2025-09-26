@@ -7,7 +7,7 @@
 sf::Vector3f Camera::position = engineConf::initialCameraPosition;
 vector<float> Camera::rotation = engineConf::initialCameraRotation;
 sf::Vector2f Camera::rotationBuffer = {0, 0};
-sf::Vector3f Camera::direction = Engine3D::rotate({0, 0, -1}, rotation);
+sf::Vector3f Camera::direction = Engine3D::rotateWithEulerAngles({0, 0, -1}, rotation);
 
 float Camera::fov = engineConf::fov;
 
@@ -66,8 +66,8 @@ void Camera::updateCamera(sf::RenderWindow& window) {
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-        position.x += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {90, 0, 0}).x;
-        position.z += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {90, 0, 0}).z;
+        position.x += engineConf::movementSpeed * Engine3D::rotateWithEulerAngles(movementDirection, {90, 0, 0}).x;
+        position.z += engineConf::movementSpeed * Engine3D::rotateWithEulerAngles(movementDirection, {90, 0, 0}).z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
@@ -76,8 +76,8 @@ void Camera::updateCamera(sf::RenderWindow& window) {
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-        position.x += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {-90, 0, 0}).x;
-        position.z += engineConf::movementSpeed * Engine3D::rotate(movementDirection, {-90, 0, 0}).z;
+        position.x += engineConf::movementSpeed * Engine3D::rotateWithEulerAngles(movementDirection, {-90, 0, 0}).x;
+        position.z += engineConf::movementSpeed * Engine3D::rotateWithEulerAngles(movementDirection, {-90, 0, 0}).z;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::LShift) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
@@ -88,5 +88,5 @@ void Camera::updateCamera(sf::RenderWindow& window) {
         position.y -= engineConf::movementSpeed;
     }
 
-    direction = Engine3D::rotate({0, 0, -1}, rotation);
+    direction = Engine3D::rotateWithEulerAngles({0, 0, -1}, rotation);
 }

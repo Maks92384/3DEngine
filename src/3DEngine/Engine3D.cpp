@@ -43,8 +43,30 @@ void Engine3D::makeNewObject(string name, vector<sf::Vector3f> points, vector<ve
     makeNewObject(name, points, faces, false);
 }
 
+sf::Vector3f Engine3D::rotateWithEulerVector(sf::Vector3f initialDirection, sf::Vector3f e) {
+    float angle = e.length() * M_PI / 180;
 
-sf::Vector3f Engine3D::rotate(sf::Vector3f initialDirection, vector<float> rotation) {
+    if (e.length() != 0)
+        e = e.normalized();
+    else
+        e = {0, 0, 0};
+
+    float rotationMatrix[3][3] = {
+        {e.x * e.x * (1 - cos(angle)) + cos(angle), e.y * e.x * (1 - cos(angle)) - e.z * sin(angle), e.z * e.x * (1 - cos(angle)) + e.y * sin(angle)},
+        {e.x * e.y * (1 - cos(angle)) + e.z * sin(angle), e.y * e.y * (1 - cos(angle)) + cos(angle), e.z * e.y * (1 - cos(angle)) - e.x * sin(angle)},
+        {e.x * e.z * (1 - cos(angle)) - e.y * sin(angle), e.y * e.z * (1 - cos(angle)) + e.x * sin(angle), e.z * e.z * (1 - cos(angle)) + cos(angle)}
+    };
+
+    sf::Vector3f rotatedDirection;
+
+    rotatedDirection.x = initialDirection.x * rotationMatrix[0][0] + initialDirection.y * rotationMatrix[0][1] + initialDirection.z * rotationMatrix[0][2];
+    rotatedDirection.y = initialDirection.x * rotationMatrix[1][0] + initialDirection.y * rotationMatrix[1][1] + initialDirection.z * rotationMatrix[1][2];
+    rotatedDirection.z = initialDirection.x * rotationMatrix[2][0] + initialDirection.y * rotationMatrix[2][1] + initialDirection.z * rotationMatrix[2][2];
+
+    return rotatedDirection;
+}
+
+sf::Vector3f Engine3D::rotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation) {
     float yaw = rotation[0] * M_PI / 180;
     float pitch = rotation[1] * M_PI / 180;
     float roll = rotation[2] * M_PI / 180;
@@ -64,7 +86,7 @@ sf::Vector3f Engine3D::rotate(sf::Vector3f initialDirection, vector<float> rotat
     return rotatedDirection;
 }
 
-sf::Vector3f Engine3D::unRotate(sf::Vector3f initialDirection, vector<float> rotation) {
+sf::Vector3f Engine3D::unRotateWithEulerAngles(sf::Vector3f initialDirection, vector<float> rotation) {
     float yaw = -rotation[0] * M_PI / 180;
     float pitch = -rotation[1] * M_PI / 180;
     float roll = -rotation[2] * M_PI / 180;
@@ -101,7 +123,8 @@ void Engine3D::render() {
         vector<sf::Vector3f> rotatedPoints = {};
 
         for (const auto& point : object.getPoints()) {
-            rotatedPoints.push_back(rotate(point, object.getRotation()));
+            //rotatedPoints.push_back(rotateWithEulerAngles(point, {object.getRotation().x, object.getRotation().y, object.getRotation().z}));
+            rotatedPoints.push_back(rotateWithEulerVector(point, object.getRotation()));
 
             rotatedPoints.back().x = rotatedPoints.back().x * object.getScale() + object.getPosition().x;
             rotatedPoints.back().y = rotatedPoints.back().y * object.getScale() + object.getPosition().y;
@@ -221,17 +244,17 @@ void Engine3D::draw(sf::RenderWindow& window) {
         sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
 
         Axes[0].position = conf::window_size_f / 2.0f;
-        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({50, 0, 0}, Camera::getRotation()).x, unRotate({50, 0, 0}, Camera::getRotation()).y);
+        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).x, unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).y);
         Axes[0].color = sf::Color(255, 0, 0);
         Axes[1].color = sf::Color(255, 0, 0);
 
         Axes[2].position = conf::window_size_f / 2.0f;
-        Axes[3].position = conf::window_size_f / 2.0f - sf::Vector2f(unRotate({0, 50, 0}, Camera::getRotation()).x, unRotate({0, 50, 0}, Camera::getRotation()).y);
+        Axes[3].position = conf::window_size_f / 2.0f - sf::Vector2f(unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).x, unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).y);
         Axes[2].color = sf::Color(0, 255, 0);
         Axes[3].color = sf::Color(0, 255, 0);
 
         Axes[4].position = conf::window_size_f / 2.0f;
-        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotate({0, 0, 50}, Camera::getRotation()).x, unRotate({0, 0, 50}, Camera::getRotation()).y);
+        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).x, unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).y);
         Axes[4].color = sf::Color(0, 0, 255);
         Axes[5].color = sf::Color(0, 0, 255);
 
@@ -244,7 +267,7 @@ sf::Vector2f Engine3D::transform(sf::Vector3f point3D) {
 
     point3D -= Camera::getPosition();
 
-    point3D = unRotate(point3D, Camera::getRotation());
+    point3D = unRotateWithEulerAngles(point3D, Camera::getRotation());
 
     float pointDistance = -point3D.z;
 
