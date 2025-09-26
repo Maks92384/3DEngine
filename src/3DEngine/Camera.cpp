@@ -5,8 +5,8 @@
 #include "../configuration.hpp"
 
 sf::Vector3f Camera::position = engineConf::initialCameraPosition;
-vector<float> Camera::rotation = engineConf::initialCameraRotation;
-sf::Vector2f Camera::rotationBuffer = {0, 0};
+vector<float> Camera::rotation = {0, 0, 0};
+vector<float> Camera::rotationBuffer = engineConf::initialCameraRotation;
 sf::Vector3f Camera::direction = Engine3D::rotateWithEulerAngles({0, 0, -1}, rotation);
 
 float Camera::fov = engineConf::fov;
@@ -16,9 +16,13 @@ void Camera::setPosition(sf::Vector3f newPosition) {
 }
 
 void Camera::setRotation(vector<float> newRotation) {
-    rotation[0] = newRotation[0];
-    rotation[1] = newRotation[1];
-    rotation[2] = newRotation[2];
+    rotation = {0, 0, 0};
+
+    rotationBuffer[0] = newRotation[0];
+    rotationBuffer[1] = newRotation[1];
+    rotationBuffer[2] = newRotation[2];
+
+    sf::Mouse::setPosition(static_cast<sf::Vector2i>(conf::window_size_f) / 2);
 }
 
 void Camera::setDirection(sf::Vector3f newDirection) {
@@ -48,12 +52,12 @@ float Camera::getFov() {
 }
 
 void Camera::updateCamera(sf::RenderWindow& window) {
-    rotation = engineConf::initialCameraRotation;
-    rotation[0] += (rotationBuffer.x + conf::window_size_f.x / 2 - sf::Mouse::getPosition(window).x) * engineConf::DPI / 1000;
-    rotation[1] += (rotationBuffer.y + conf::window_size_f.y / 2 - sf::Mouse::getPosition(window).y) * engineConf::DPI / 1000;
+    rotation[0] = (rotationBuffer[0] + (conf::window_size_f.x / 2 - sf::Mouse::getPosition(window).x) * engineConf::DPI / 1000);
+    rotation[1] = (rotationBuffer[1] + (conf::window_size_f.y / 2 - sf::Mouse::getPosition(window).y) * engineConf::DPI / 1000);
 
     if (distanceBetween(static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)), conf::window_size_f / 2.0f) > 100) {
-        rotationBuffer -= static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)) - conf::window_size_f / 2.0f;
+        rotationBuffer[0] -= (sf::Mouse::getPosition(window).x - conf::window_size_f.x / 2.0f) * engineConf::DPI / 1000;
+        rotationBuffer[1] -= (sf::Mouse::getPosition(window).y - conf::window_size_f.y / 2.0f) * engineConf::DPI / 1000;
         sf::Mouse::setPosition(static_cast<sf::Vector2i>(conf::window_size_f) / 2);
     }
 
