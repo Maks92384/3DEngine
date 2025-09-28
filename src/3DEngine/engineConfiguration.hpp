@@ -2,6 +2,8 @@
 #include <SFML\Graphics.hpp>
 #include <cmath>
 
+using namespace std;
+
 namespace engineConf {
     // Overall engine configuration
 
