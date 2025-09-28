@@ -10,11 +10,12 @@ class Engine3D {
 
     static vector<sf::Vector2f> pointsToDraw;
     static vector<vector<sf::Vector2f>> facesToDraw;
+    static vector<sf::Vector3f> normals;
     static vector<float> distances;
 
     static sf::Vector2f transform(sf::Vector3f point);
 
-    static void radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces);
+    static void radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces, vector<sf::Vector3f>& normals);
 
     static bool debugMode;
 public:

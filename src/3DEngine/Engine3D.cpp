@@ -13,6 +13,7 @@ vector<string> Engine3D::objectsToDraw;
 
 vector<sf::Vector2f> Engine3D::pointsToDraw;
 vector<vector<sf::Vector2f>> Engine3D::facesToDraw;
+vector<sf::Vector3f> Engine3D::normals;
 vector<float> Engine3D::distances;
 
 bool Engine3D::debugMode = engineConf::debugMode;
@@ -108,6 +109,7 @@ sf::Vector3f Engine3D::unRotateWithEulerAngles(sf::Vector3f initialDirection, ve
 
 
 void Engine3D::render() {
+    normals.clear();
     for (auto& [objectName, object] : objects) {
         if (!object.isEnabled()) break;
 
@@ -136,8 +138,6 @@ void Engine3D::render() {
                 pointsToDraw.push_back(pointsPositions.back());
         }
 
-        vector<sf::Vector3f> normals;
-
         for (auto& face : object.getFaces()) {
             const sf::Vector3f pointA = rotatedPoints[face[0]];
             const sf::Vector3f pointB = rotatedPoints[face[1]];
@@ -146,7 +146,7 @@ void Engine3D::render() {
             sf::Vector3f vectorAB = pointB - pointA;
             sf::Vector3f vectorBC = pointB - pointC;
 
-            normals.push_back({vectorAB.y * vectorBC.z - vectorAB.z * vectorBC.y, vectorAB.z * vectorBC.x - vectorAB.x * vectorBC.z, vectorAB.x * vectorBC.y - vectorAB.y * vectorBC.x});
+            sf::Vector3f normal = {vectorAB.y * vectorBC.z - vectorAB.z * vectorBC.y, vectorAB.z * vectorBC.x - vectorAB.x * vectorBC.z, vectorAB.x * vectorBC.y - vectorAB.y * vectorBC.x};
 
             sf::Vector3f faceCenter = {(pointA.x + pointB.x + pointC.x) / 3, (pointA.y + pointB.y + pointC.y) / 3, (pointA.z + pointB.z + pointC.z) / 3};
 
@@ -162,12 +162,13 @@ void Engine3D::render() {
 
             sf::Vector3f directionToFace = {faceCenter - Camera::getPosition()};
 
-            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normals.back())) <= M_PI / 2;
+            bool isTheFrontOfTheFace = abs(angleBetween(directionToFace, normal)) <= M_PI / 2;
 
 
             if (faceOnScreen && isTheFrontOfTheFace && drawObject) {
                 facesToDraw.push_back({point2D_A, point2D_B, point2D_C});
                 distances.push_back(distanceBetween(Camera::getPosition(), faceCenter));
+                normals.push_back(normal);
             }
         }
 
@@ -177,10 +178,9 @@ void Engine3D::render() {
 }
 
 void Engine3D::draw(sf::RenderWindow& window) {
-    radixSortForFaces(distances, facesToDraw);
+    radixSortForFaces(distances, facesToDraw, normals);
 
     sf::ConvexShape face(3);
-    face.setFillColor(sf::Color(255, 100, 0));
     sf::VertexArray outline(sf::PrimitiveType::LineStrip, 4);
 
     sf::Color outlineColor(70, 70, 70);
@@ -195,6 +195,29 @@ void Engine3D::draw(sf::RenderWindow& window) {
         face.setPoint(1, facesToDraw[i][1]);
         face.setPoint(2, facesToDraw[i][2]);
 
+        sf::Vector3f normal = normals[i];
+
+        sf::Vector3f lightDirectioin = {2, -1, -1};
+
+        int red = 255 + 100 * cos(angleBetween(normal, lightDirectioin));
+        int green = 100 + 100 * cos(angleBetween(normal, lightDirectioin));
+        int blue = 0 + 100 * cos(angleBetween(normal, lightDirectioin));
+
+        if (red > 255)
+            red = 255;
+        if (green > 255)
+            green = 255;
+        if (blue > 255)
+            blue = 255;
+        if (red < 0)
+            red = 0;
+        if (green < 0)
+            green = 0;
+        if (blue < 0)
+            blue = 0;
+
+        face.setFillColor(sf::Color(red, green, blue));
+
 
         window.draw(face);
 
@@ -203,7 +226,7 @@ void Engine3D::draw(sf::RenderWindow& window) {
         outline[2].position = facesToDraw[i][2];
         outline[3].position = facesToDraw[i][0];
 
-        window.draw(outline);
+        //window.draw(outline);
     }
 
     /*
@@ -368,7 +391,7 @@ void Engine3D::generateBox(string name, sf::Vector3f position, sf::Vector3i dime
     objects[name].setPosition(position);
 }
 
-void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces) {
+void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vector2f>>& faces, vector<sf::Vector3f>& normals) {
     vector<array<uint16_t, 2>> distancesAsUint16; // size is the size of distances
     array<uint16_t, 2> tempDistanceAsInt16;
 
@@ -383,22 +406,26 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
 
     vector<array<uint16_t, 2>> buckets[65536] = {};
     vector<vector<vector<sf::Vector2f>>> faceBuckets(65536);
+    vector<vector<sf::Vector3f>> normalBuckets(65536);
 
     unsigned int index = 0;
     for (array<uint16_t, 2>& distance : distancesAsUint16) {
         buckets[distance[1]].push_back(distance);
         faceBuckets[distance[1]].push_back(faces[index]);
+        normalBuckets[distance[1]].push_back(normals[index]);
         index++;
     }
 
     distancesAsUint16.clear();
     faces.clear();
+    normals.clear();
 
     index = 0;
     for (vector<array<uint16_t, 2>>& bucket : buckets) {
         for (uint16_t i = 0; i < bucket.size(); i++) {
             distancesAsUint16.push_back(bucket[i]);
             faces.push_back(faceBuckets[index][i]);
+            normals.push_back(normalBuckets[index][i]);
         }
         index++;
     }
@@ -407,6 +434,7 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
     for (vector<array<uint16_t, 2>>& bucket : buckets) {
         bucket.clear();
         faceBuckets[index].clear();
+        normalBuckets[index].clear();
         index++;
     }
 
@@ -414,6 +442,7 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
     for (array<uint16_t, 2>& distance : distancesAsUint16) {
         buckets[distance[0]].push_back(distance);
         faceBuckets[distance[0]].push_back(faces[index]);
+        normalBuckets[distance[0]].push_back(normals[index]);
         index++;
     }
 
@@ -423,11 +452,13 @@ void Engine3D::radixSortForFaces(vector<float>& distances, vector<vector<sf::Vec
     for (vector<array<uint16_t, 2>>& bucket : buckets) {
         for (uint16_t i = 0; i < bucket.size(); i++) {
             faces.push_back(faceBuckets[index][i]);
+            normals.push_back(normalBuckets[index][i]);
         }
         index++;
     }
 
     reverse(faces.begin(), faces.end());
+    reverse(normals.begin(), normals.end());
 }
 
 void Engine3D::loadFromFile(string fileName, string objectName) {
