@@ -244,17 +244,17 @@ void Engine3D::draw(sf::RenderWindow& window) {
         sf::VertexArray Axes(sf::PrimitiveType::Lines, 6);
 
         Axes[0].position = conf::window_size_f / 2.0f;
-        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).x, unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).y);
+        Axes[1].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).x, -unRotateWithEulerAngles({50, 0, 0}, Camera::getRotation()).y);
         Axes[0].color = sf::Color(255, 0, 0);
         Axes[1].color = sf::Color(255, 0, 0);
 
         Axes[2].position = conf::window_size_f / 2.0f;
-        Axes[3].position = conf::window_size_f / 2.0f - sf::Vector2f(unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).x, unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).y);
+        Axes[3].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).x, -unRotateWithEulerAngles({0, 50, 0}, Camera::getRotation()).y);
         Axes[2].color = sf::Color(0, 255, 0);
         Axes[3].color = sf::Color(0, 255, 0);
 
         Axes[4].position = conf::window_size_f / 2.0f;
-        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).x, unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).y);
+        Axes[5].position = conf::window_size_f / 2.0f + sf::Vector2f(unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).x, -unRotateWithEulerAngles({0, 0, 50}, Camera::getRotation()).y);
         Axes[4].color = sf::Color(0, 0, 255);
         Axes[5].color = sf::Color(0, 0, 255);
 
