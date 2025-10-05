@@ -4,13 +4,27 @@
 
 float angleBetween(sf::Vector3f vectorA, sf::Vector3f vectorB) {  // returns an absolute value of an angle between two vectors in radians, 3D version
     if (vectorA.length() == 0 || vectorB.length() == 0)
+        return NAN;
+
+    if (vectorA.dot(vectorB) / vectorA.length() / vectorB.length() > 1)
         return 0;
+
+    if (vectorA.dot(vectorB) / vectorA.length() / vectorB.length() < -1)
+        return M_PI;
+
     return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length());
 }
 
 float angleBetween(sf::Vector2f vectorA, sf::Vector2f vectorB) {  // returns an absolute value of an angle between two vectors in radians, 2D version
     if (vectorA.length() == 0 || vectorB.length() == 0)
+        return NAN;
+
+    if (vectorA.dot(vectorB) / vectorA.length() / vectorB.length() > 1)
         return 0;
+
+    if (vectorA.dot(vectorB) / vectorA.length() / vectorB.length() < -1)
+        return M_PI;
+
     return acos(vectorA.dot(vectorB) / vectorA.length() / vectorB.length());
 }
 
