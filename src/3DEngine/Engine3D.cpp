@@ -111,7 +111,7 @@ sf::Vector3f Engine3D::unRotateWithEulerAngles(sf::Vector3f initialDirection, ve
 void Engine3D::render() {
     normals.clear();
     for (auto& [objectName, object] : objects) {
-        if (!object.isEnabled()) break;
+        if (!object.isEnabled()) continue;
 
         bool drawObject = true;
 
